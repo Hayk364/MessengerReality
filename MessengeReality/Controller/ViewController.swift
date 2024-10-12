@@ -26,9 +26,7 @@ class ViewController: UIViewController,UIApplicationDelegate {
         self.view.backgroundColor = UIColor(red: 0.9, green: 0.7, blue: 0.5, alpha: 0.5)
         UserDefaults.standard.set(String(describing: type(of: self)), forKey: "lastOpenViewController")
         
-        Model.shared.createUser(user: User(id: nil, name: "root", password: "root")) { result in
-            print(result)
-        }
+        
         createTextFields()
         createRegisterButton()
         createHidePasswordButton()
@@ -95,10 +93,6 @@ class ViewController: UIViewController,UIApplicationDelegate {
         ])
     }
     @objc func Register(){
-        if self.textFieldName.text == "getData"{
-            Model.shared.getDataBase()
-        }
-        else{
             print("Register")
             guard let name = self.textFieldName.text, !name.isEmpty,
                       let password = self.textFieldPassword.text, !password.isEmpty else {
@@ -108,18 +102,16 @@ class ViewController: UIViewController,UIApplicationDelegate {
             let user = User(id: nil, name: name, password: password)
             Model.shared.createUser(user: user) { result in            DispatchQueue.main.async {
                      switch result{
-                     case .success(let user):
+                     case .success(_):
                          UserDefaults.standard.set(self.textFieldName.text, forKey: "username")
-                         print("Name \(UserDefaults.standard.string(forKey:"username"))")
+                         print("Name \(String(describing: UserDefaults.standard.string(forKey:"username")))")
                          self.navigationController?.viewControllers = [HomeViewController()]
                          break;
                      case .failure(let error):
-                         print("Error \(error)")
-                         self.createErrorAlert(error: "Error For Create user")
+                         self.createErrorAlert(error: error.localizedDescription)
                      }
                 }
             }
-        }
     }
     final func createErrorAlert(error:String){
         self.alertForError = UIAlertController(title: "Error", message: error, preferredStyle: .alert)

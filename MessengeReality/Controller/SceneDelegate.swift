@@ -24,6 +24,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if lastOpenViewController == String(describing: type(of: ViewController())){
             rootViewController = ViewController()
         }
+        else if lastOpenViewController == String(describing: type(of: HomeViewController())){
+            rootViewController = HomeViewController()
+        }
         else{
             rootViewController = ViewController()
         }

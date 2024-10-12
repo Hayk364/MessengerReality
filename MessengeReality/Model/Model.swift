@@ -8,7 +8,7 @@ public final class Model{
     static let shared = Model()
 
     
-    final func getDataBase(){
+    final func getDataBase(complition:@escaping (Result<[String],Error>) -> Void){
         guard let url = URL(string:baseURL) else { return }
         let request = URLRequest(url: url)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -16,11 +16,13 @@ public final class Model{
             guard let users = data else { return }
             do {
                 let users = try JSONDecoder().decode([User].self, from: users)
+                var array = [String]()
                 for user in users {
-                    print(user.name)
+                    array.append(user.name!)
                 }
+                complition(.success(array))
             } catch {
-                print(error)
+                complition(.failure(error))
             }
         }
         task.resume()
@@ -30,7 +32,7 @@ public final class Model{
         let request = URLRequest(url: url)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if error != nil { return }
-            guard let data = data else { return }
+            guard let _ = data else { return }
             do {
                 print("Data Is Printed")
             } catch {
@@ -38,8 +40,48 @@ public final class Model{
             }
         }
     }
+    final func findName(newUser:User,complition: @escaping (Bool) -> Void){
+        guard let url = URL(string: baseURL) else { return }
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if error != nil { return }
+            guard let users = data else { return }
+            do {
+                let users = try JSONDecoder().decode([User].self, from: users)
+                for user in users {
+                    if user.name == newUser.name {
+                        complition(true)
+                        return
+                    }
+                }
+                complition(false)
+            }
+            catch{
+                complition(false)
+            }
+        }
+        task.resume()
+    }
+    final func get(username:String,complition:@escaping (Result<User,Error>) -> Void){
+        guard let url = URL(string: self.baseURL) else { return }
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if error != nil { return }
+            guard let users = data else { return }
+            do {
+                let users = try JSONDecoder().decode([User].self, from: users)
+                for user in users {
+                    if user.name == username {
+                        complition(.success(user))
+                    }
+                }
+            }
+            catch{
+                complition(.failure(error))
+            }
+        }
+        task.resume()
+    }
     final func createUser(user: User, completion: @escaping (Result<User, Error>) -> Void) {
-        self.findUser(newUser: user) { result, isFind in
+        self.findName(newUser: user) { isFind in
             if isFind {
                 let error = NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Username has been used"])
                 completion(.failure(error))
